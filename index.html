@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      width: 2rem;
+      height: 2rem;
+    }
+
+    .row {
+      width: 100%;
+      display: flex;
+    }
+
+    .cell {
+      flex: 1;
+      border: 1px solid black;
+    }
+
+    .fill {
+      background-color: black;
+    }
+
+    #table {
+      width: 20rem;
+    }
+  </style>
+</head>
+<body>
+  <button id="refresh">Refresh</button>
+  <button id="start">Start</button>
+  <button id="stop">Stop</button>
+  <div id="table">
+    
+  </div>
+  <script>
+    function randomFill() {
+      return Math.round(Math.random())
+    }
+
+    function initializeTableState(tableSize) {
+      const table = []
+      for (let i = 0; i < tableSize; i++) {
+        const row = []
+        for (let j = 0; j < tableSize; j++) {
+          row.push(randomFill()) 
+        }
+        table.push(row)
+      }
+
+      return table
+    }
+
+
+    // make a 10x10 grid
+    function renderTable(state, tableDiv) {
+      // clear table
+      tableDiv.innerHTML = ""
+
+      for (let i = 0; i < state.length; i++) {
+        const rowState = state[i];
+        const row = document.createElement('div')
+        row.classList.add("row")
+        tableDiv.appendChild(row)
+
+        for (let j = 0; j < rowState.length; j++) {
+          const cellState = rowState[j]
+          const cell = document.createElement('div')
+          cell.classList.add("cell")
+          if (cellState === 1) {
+            cell.classList.add("fill")
+          }
+          row.appendChild(cell)
+        } 
+      }
+    }
+
+    function checkCell(state, row, col) {
+      if (!state[row] || !state[row][col]){
+        return 0
+      }else{
+        return state[row][col]
+      }
+    }
+
+    // For a given cell, return whether it's alive or dead
+    function checkNeighbors(state, row, col) {
+      const cellValue = state[row][col]
+
+      const northWest = checkCell(state, row - 1, col - 1)
+      const north = checkCell(state, row - 1, col)
+      const northEast = checkCell(state, row - 1, col + 1)
+      const east = checkCell(state,row, col + 1)
+      const west = checkCell(state, row, col - 1)
+      const southWest = checkCell(state, row + 1, col - 1)
+      const south = checkCell(state, row + 1, col)
+      const southEast = checkCell(state, row + 1, col + 1)
+      const sum = northWest + north + northEast + east + west + southWest + south + southEast
+
+      if (!cellValue && sum === 3) {
+        // a dead cell has 3 neighbors => return 1
+        return 1
+      } else if (cellValue && sum >= 4) {
+        // a living cell has >= 4 neighbors => return 0
+        return 0
+      } else if (cellValue && sum <= 1) {
+        // a living cell has <= 1 neighbor => return 0
+        return 0
+      }
+      // else return cell
+      return cellValue
+    }
+
+    // Given a state, return new state
+    function generateNewState(inputState) {
+      const outputState = [...inputState]
+      for (let i = 0; i < inputState.length; i++) {
+        const row = inputState[i]
+        for (let j = 0; j < row.length; j++) {
+          outputState[i][j] = checkNeighbors(inputState, i, j)
+        }
+      }
+      return outputState
+    }
+
+    const table = document.getElementById('table')
+    const refreshButton = document.getElementById("refresh")
+    const startButton = document.getElementById("start")
+    const stopButton = document.getElementById("stop")
+    // global state
+    // initialize pattern
+
+    // setInterval:
+    // for every second, take state => generateNewState => render(outputState)
+
+    let tableState = initializeTableState(10)
+    renderTable(tableState, table)
+
+    refreshButton.addEventListener("click", () => {
+      tableState = initializeTableState(10)
+      renderTable(tableState, table)
+    })
+
+    let interval
+    startButton.addEventListener("click", () => {
+      interval = setInterval(() => {
+        tableState = generateNewState(tableState)
+        renderTable(tableState, table)
+      }, 1000)
+    })
+
+    stopButton.addEventListener("click", () => {
+      clearInterval(interval)
+    })
+
+  
+    // setup handler for button to start process
+  </script>
+</body>
+</html>
